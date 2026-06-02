@@ -2,6 +2,31 @@
 
 A free, mobile-first, fully customizable Wim Hof-style guided breathing app. Built with React, TypeScript, Tailwind CSS, Framer Motion and Vaul, and shipped as an installable PWA.
 
+## Live preview
+
+<p align="center">
+  <a href="https://breathe-zeta-two.vercel.app/">
+    <img
+      src="https://img.shields.io/badge/Open_Live_App-▶-f2603c?style=for-the-badge&labelColor=0a0a0a"
+      alt="Open live app"
+    />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://breathe-zeta-two.vercel.app/"><strong>breathe-zeta-two.vercel.app</strong></a>
+</p>
+
+<p align="center">
+  <a href="https://breathe-zeta-two.vercel.app/">
+    <img src="https://img.shields.io/badge/demo-live-22c55e?style=flat-square" alt="Demo status" />
+  </a>
+  <img src="https://img.shields.io/badge/PWA-installable-000?style=flat-square&logo=pwa&logoColor=white" alt="PWA" />
+  <img src="https://img.shields.io/badge/guest_mode-no_sign--up_required-555?style=flat-square" alt="Guest mode" />
+</p>
+
+<p align="center"><sub>Best on mobile · Add to home screen for the full app experience</sub></p>
+
 ## The session
 
 Each round runs three phases:
