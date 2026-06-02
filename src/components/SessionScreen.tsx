@@ -11,13 +11,14 @@ import BreathingOrb from "./BreathingOrb";
 import Controls from "./Controls";
 import SettingsDrawer from "./SettingsDrawer";
 import HistoryDrawer from "./HistoryDrawer";
+import AccountDrawer from "./AccountDrawer";
 
 export default function SessionScreen() {
   const addSession = useHistory((s) => s.addSession);
   const handleComplete = useCallback(
     (session: CompletedSession) => {
       if (session.rounds === 0) return;
-      addSession(session);
+      void addSession(session);
     },
     [addSession],
   );
@@ -27,6 +28,7 @@ export default function SessionScreen() {
   const settings = useSettings();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
 
   const isActive =
     state.phase === "breathing" ||
@@ -76,7 +78,7 @@ export default function SessionScreen() {
               >
                 Start
               </button>
-              <div className="flex w-full items-center justify-center gap-3">
+              <div className="flex w-full flex-wrap items-center justify-center gap-3">
                 <SettingsDrawer
                   open={settingsOpen}
                   onOpenChange={setSettingsOpen}
@@ -84,6 +86,10 @@ export default function SessionScreen() {
                 <HistoryDrawer
                   open={historyOpen}
                   onOpenChange={setHistoryOpen}
+                />
+                <AccountDrawer
+                  open={accountOpen}
+                  onOpenChange={setAccountOpen}
                 />
               </div>
             </motion.div>

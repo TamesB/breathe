@@ -26,13 +26,22 @@ Settings persist to `localStorage` and apply to your next session. There's a liv
 
 During a session you can **Pause / Resume**, **Skip** the current phase, or **Stop**. Retention is recorded per round and shown on the completion screen.
 
+## History & account
+
+- **History** drawer — past sessions, stats (best hold, streak), stored on this device by default.
+- **Account** drawer — optional sign-in via magic link or Google. When signed in, history syncs to Supabase and follows you across devices.
+- On first sign-in, any guest sessions on this device are merged into your account.
+
+Settings stay local for now; only breathing history syncs to the cloud.
+
 ## Tech stack
 
 - **Vite + React + TypeScript**
 - **Tailwind CSS** (class-based dark mode, shadcn-style HSL theme variables)
 - **Framer Motion** — breathing orb + phase transitions
-- **Vaul** — bottom-sheet settings drawer
-- **Zustand** (+ persist) — settings state
+- **Vaul** — bottom-sheet drawers
+- **Zustand** — settings + history + auth state
+- **Supabase** — optional auth + Postgres history (RLS)
 - **vite-plugin-pwa** — offline-capable, installable PWA
 
 > Note: the original site uses the paid *PP Pangram Sans Rounded* typeface. This prototype substitutes the free **Quicksand** Google Font for a similar rounded look.
@@ -41,8 +50,30 @@ During a session you can **Pause / Resume**, **Skip** the current phase, or **St
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
+cp .env.example .env.local   # optional — see Supabase setup below
+npm run dev                  # http://localhost:5173
 ```
+
+Without Supabase env vars the app runs fully in **guest mode** (localStorage only).
+
+## Supabase setup (optional)
+
+1. Create a project at [supabase.com](https://supabase.com).
+2. In **SQL Editor**, run the migration in [`supabase/migrations/0001_breathing_sessions.sql`](supabase/migrations/0001_breathing_sessions.sql).
+3. In **Project Settings → API**, copy the project URL and `anon` public key into `.env.local`:
+
+   ```
+   VITE_SUPABASE_URL=https://your-project.supabase.co
+   VITE_SUPABASE_ANON_KEY=your-anon-key
+   ```
+
+4. In **Authentication → URL configuration**, set:
+   - **Site URL**: your production URL (e.g. `https://your-app.vercel.app`)
+   - **Redirect URLs**: `http://localhost:5173`, your production URL
+5. Enable **Email** (magic link) under Authentication → Providers.
+6. (Optional) Enable **Google** and add OAuth client ID/secret from Google Cloud Console.
+
+Restart `npm run dev` after changing env vars.
 
 ## Build & preview
 
@@ -53,7 +84,16 @@ npm run preview  # serve the production build locally
 
 ## Deploy
 
-Any static host works (Vercel, Netlify, Cloudflare Pages, GitHub Pages). Point it at the `dist/` output of `npm run build`. On Vercel, the framework preset for Vite works out of the box.
+**Frontend** — any static host (Vercel, Netlify, Cloudflare Pages). Build command: `npm run build`, output: `dist/`.
+
+Add environment variables on your host:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+
+Update Supabase **Redirect URLs** to include your production domain.
+
+**Backend** — Supabase (managed). No separate API server required; the browser talks to Postgres via Row Level Security policies.
 
 ## Safety
 
