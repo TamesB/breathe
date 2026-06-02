@@ -67,9 +67,11 @@ Without Supabase env vars the app runs fully in **guest mode** (localStorage onl
    VITE_SUPABASE_ANON_KEY=your-anon-key
    ```
 
-4. In **Authentication → URL configuration**, set:
-   - **Site URL**: your production URL (e.g. `https://your-app.vercel.app`)
-   - **Redirect URLs**: `http://localhost:5173`, your production URL
+4. In **Authentication → URL configuration** (critical — if **Site URL** is `localhost`, magic links will send users there):
+   - **Site URL:** your production URL (e.g. `https://your-app.vercel.app`) — **not** `http://localhost:5173`
+   - **Redirect URLs:** add every URL you use, one per line:
+     - `https://your-app.vercel.app`
+     - `http://localhost:5173`
 5. Enable **Email** (magic link) under Authentication → Providers.
 6. (Optional) Enable **Google** and add OAuth client ID/secret from Google Cloud Console.
 
@@ -100,6 +102,7 @@ The repo includes [`vercel.json`](vercel.json) (Vite build, SPA routing, PWA cac
    |------|--------|
    | `VITE_SUPABASE_URL` | Your Supabase project URL |
    | `VITE_SUPABASE_ANON_KEY` | Your Supabase anon / publishable key |
+   | `VITE_SITE_URL` | Your Vercel URL, e.g. `https://your-app.vercel.app` (no trailing slash) |
 
    These are baked in at build time. Redeploy after changing them.
 
@@ -109,9 +112,10 @@ The repo includes [`vercel.json`](vercel.json) (Vite build, SPA routing, PWA cac
 
 1. Copy your production URL (e.g. `https://breathe-xyz.vercel.app`).
 2. In **Supabase → Authentication → URL configuration**:
-   - **Site URL:** your Vercel production URL
+   - **Site URL:** your Vercel production URL (must match `VITE_SITE_URL`)
    - **Redirect URLs:** add your Vercel URL and `http://localhost:5173`
-3. Run the SQL migration if you have not already ([`supabase/migrations/0001_breathing_sessions.sql`](supabase/migrations/0001_breathing_sessions.sql)).
+3. Redeploy on Vercel if you added or changed `VITE_SITE_URL`.
+4. Run the SQL migration if you have not already ([`supabase/migrations/0001_breathing_sessions.sql`](supabase/migrations/0001_breathing_sessions.sql)).
 
 ### CLI (optional)
 
