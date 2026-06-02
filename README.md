@@ -82,18 +82,47 @@ npm run build    # type-checks and builds to dist/ (emits manifest + service wor
 npm run preview  # serve the production build locally
 ```
 
-## Deploy
+## Deploy on Vercel
 
-**Frontend** — any static host (Vercel, Netlify, Cloudflare Pages). Build command: `npm run build`, output: `dist/`.
+The repo includes [`vercel.json`](vercel.json) (Vite build, SPA routing, PWA cache headers).
 
-Add environment variables on your host:
+### One-time setup
 
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
+1. Push this repo to GitHub (or GitLab / Bitbucket).
+2. Go to [vercel.com/new](https://vercel.com/new) and **Import** the repository.
+3. Vercel should auto-detect **Vite**. Confirm:
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `dist`
+   - **Install Command:** `npm install`
+4. Under **Environment Variables**, add (for Production, Preview, and Development):
 
-Update Supabase **Redirect URLs** to include your production domain.
+   | Name | Value |
+   |------|--------|
+   | `VITE_SUPABASE_URL` | Your Supabase project URL |
+   | `VITE_SUPABASE_ANON_KEY` | Your Supabase anon / publishable key |
 
-**Backend** — Supabase (managed). No separate API server required; the browser talks to Postgres via Row Level Security policies.
+   These are baked in at build time. Redeploy after changing them.
+
+5. Click **Deploy**.
+
+### After deploy
+
+1. Copy your production URL (e.g. `https://breathe-xyz.vercel.app`).
+2. In **Supabase → Authentication → URL configuration**:
+   - **Site URL:** your Vercel production URL
+   - **Redirect URLs:** add your Vercel URL and `http://localhost:5173`
+3. Run the SQL migration if you have not already ([`supabase/migrations/0001_breathing_sessions.sql`](supabase/migrations/0001_breathing_sessions.sql)).
+
+### CLI (optional)
+
+```bash
+npx vercel          # preview deploy
+npx vercel --prod   # production deploy
+```
+
+Do not commit `.env` — use Vercel’s dashboard for secrets. Guest mode works without Supabase env vars.
+
+**Backend** — Supabase (managed). No separate API server; the browser uses Row Level Security.
 
 ## Safety
 
