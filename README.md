@@ -1,6 +1,6 @@
-# Breathe — Wim Hof Guided Breathing PWA
+# Breathe — Guided Breathing App
 
-A free, mobile-first, fully customizable Wim Hof-style guided breathing app. Built with React, TypeScript, Tailwind CSS, Framer Motion and Vaul, and shipped as an installable PWA. Styled after [deepbreathe.app](https://www.deepbreathe.app): dark theme, soft rounded type, and a slow swirling "belly" gradient.
+A free, mobile-first, fully customizable Wim Hof-style guided breathing app. Built with React, TypeScript, Tailwind CSS, Framer Motion and Vaul, and shipped as an installable PWA.
 
 ## The session
 
@@ -43,8 +43,6 @@ Settings stay local for now; only breathing history syncs to the cloud.
 - **Zustand** — settings + history + auth state
 - **Supabase** — optional auth + Postgres history (RLS)
 - **vite-plugin-pwa** — offline-capable, installable PWA
-
-> Note: the original site uses the paid *PP Pangram Sans Rounded* typeface. This prototype substitutes the free **Quicksand** Google Font for a similar rounded look.
 
 ## Getting started
 
