@@ -29,11 +29,12 @@ A free, mobile-first, fully customizable Wim Hof-style guided breathing app. Bui
 
 ## The session
 
-Each round runs three phases:
+Each round runs four phases:
 
 1. **Power breaths** — a set number of full inhale/exhale cycles (default 30).
 2. **Breath retention** — exhale and hold with empty lungs (default 90s).
 3. **Recovery hold** — a full inhale, held (default 15s).
+4. **Break between rounds** — a short pause before the next round (default 5s).
 
 Repeats for the configured number of rounds (default 3). Everything is customizable.
 
@@ -45,11 +46,18 @@ Open the bottom-sheet **Settings** drawer to tune:
 - Breaths per round
 - Inhale speed / Exhale speed (breathing pace)
 - Breath retention duration
+- **Indefinite hold** (optional) — hold until you request to breathe
 - Recovery hold duration
+- Break between rounds
 
 Settings persist to `localStorage` and apply to your next session. There's a live estimate of total session length.
 
-During a session you can **Pause / Resume**, **Skip** the current phase, or **Stop**. Retention is recorded per round and shown on the completion screen.
+During a session you can **Pause / Resume** or **Stop**.
+
+- **Skip is intentionally limited to the breath retention phase** (it’s the only skippable phase).
+- When **Indefinite hold** is enabled, the Skip button becomes **“I need to breathe”** and also works via **double-tap anywhere** (excluding the buttons/inputs). Each time you end the hold, that round’s hold time is recorded.
+
+Retention is recorded per round and shown on the completion screen.
 
 ## History & account
 
