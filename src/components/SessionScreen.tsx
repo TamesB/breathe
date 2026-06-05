@@ -104,7 +104,9 @@ export default function SessionScreen() {
                 breaths &middot;{" "}
                 {isInfiniteHold
                   ? "indefinite hold"
-                  : `${formatShort(settings.retentionSeconds)} hold`}
+                  : settings.retentionIncreasePerRound > 0
+                    ? `${formatShort(settings.retentionSeconds)} hold (+${settings.retentionIncreasePerRound}s/round)`
+                    : `${formatShort(settings.retentionSeconds)} hold`}
               </p>
               <button
                 onClick={start}

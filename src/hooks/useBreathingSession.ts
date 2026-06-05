@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useSettings, type BreathSettings } from "../store/useSettings";
+import {
+  retentionForRound,
+  useSettings,
+  type BreathSettings,
+} from "../store/useSettings";
 
 export type Phase =
   | "idle"
@@ -119,11 +123,18 @@ export function useBreathingSession(options: SessionOptions = {}) {
       phaseRef.current = phase;
       elapsedRef.current = 0;
       if (opts?.round != null) roundRef.current = opts.round;
-      publish({
+      const next: Partial<SessionState> = {
         phase,
         round: roundRef.current,
         retentionLog: [...retentionLogRef.current],
-      });
+      };
+      if (phase === "retention") {
+        next.retentionTarget = retentionForRound(
+          cfg.current,
+          roundRef.current,
+        );
+      }
+      publish(next);
     },
     [publish],
   );
@@ -175,10 +186,11 @@ export function useBreathingSession(options: SessionOptions = {}) {
         break;
       }
       case "retention": {
-        if (!c.indefiniteRetention && elapsedS >= c.retentionSeconds) {
+        const target = retentionForRound(c, roundRef.current);
+        if (!c.indefiniteRetention && elapsedS >= target) {
           retentionLogRef.current = [
             ...retentionLogRef.current,
-            Math.round(c.retentionSeconds),
+            Math.round(target),
           ];
           goToPhase("recovery");
           break;
@@ -188,8 +200,8 @@ export function useBreathingSession(options: SessionOptions = {}) {
           holdElapsed: Math.floor(elapsedS),
           secondsRemaining: c.indefiniteRetention
             ? 0
-            : Math.ceil(c.retentionSeconds - elapsedS),
-          retentionTarget: c.indefiniteRetention ? 0 : c.retentionSeconds,
+            : Math.ceil(target - elapsedS),
+          retentionTarget: target,
         });
         break;
       }

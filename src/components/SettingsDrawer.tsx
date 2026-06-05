@@ -1,5 +1,6 @@
 import { Drawer } from "vaul";
 import {
+  retentionForRound,
   SETTINGS_LIMITS,
   useSettings,
   type BreathSettings,
@@ -39,7 +40,13 @@ const FIELDS: FieldDef[] = [
     key: "retentionSeconds",
     label: "Breath retention",
     format: (v) => formatSeconds(v),
-    hint: "Hold with empty lungs",
+    hint: "Hold with empty lungs (round 1)",
+  },
+  {
+    key: "retentionIncreasePerRound",
+    label: "Hold increase per round",
+    unit: "s",
+    hint: "Add extra seconds to each following round",
   },
   {
     key: "indefiniteRetention",
@@ -141,7 +148,9 @@ export default function SettingsDrawer({
 
               const limits = SETTINGS_LIMITS[f.key as keyof typeof SETTINGS_LIMITS];
               const disabled =
-                f.key === "retentionSeconds" && isIndefinite;
+                isIndefinite &&
+                (f.key === "retentionSeconds" ||
+                  f.key === "retentionIncreasePerRound");
               const display = f.format
                 ? f.format(value as number)
                 : `${value}${f.unit ?? ""}`;
@@ -188,6 +197,7 @@ function SessionSummary() {
     useSettings();
   const {
     retentionSeconds,
+    retentionIncreasePerRound,
     recoverySeconds,
     roundBreakSeconds,
     indefiniteRetention,
@@ -205,8 +215,18 @@ function SessionSummary() {
 
   const perRoundBreathing =
     breathsPerRound * (inhaleSeconds + exhaleSeconds);
+  const timedSettings = {
+    retentionSeconds,
+    retentionIncreasePerRound,
+    indefiniteRetention: false as const,
+  };
+  let totalRetention = 0;
+  for (let r = 1; r <= rounds; r++) {
+    totalRetention += retentionForRound(timedSettings, r);
+  }
   const totalSeconds =
-    rounds * (perRoundBreathing + retentionSeconds + recoverySeconds) +
+    rounds * (perRoundBreathing + recoverySeconds) +
+    totalRetention +
     Math.max(0, rounds - 1) * roundBreakSeconds;
   return (
     <div className="rounded-2xl bg-white/5 p-4 text-sm text-white/70">
