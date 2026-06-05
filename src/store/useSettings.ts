@@ -24,7 +24,7 @@ export const DEFAULT_SETTINGS: BreathSettings = {
   inhaleSeconds: 1.6,
   exhaleSeconds: 1.6,
   retentionSeconds: 90,
-  retentionIncreasePerRound: 0,
+  retentionIncreasePerRound: 30,
   indefiniteRetention: false,
   recoverySeconds: 15,
   roundBreakSeconds: 5,
