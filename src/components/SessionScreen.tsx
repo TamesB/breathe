@@ -5,7 +5,9 @@ import {
   useBreathingSession,
   type CompletedSession,
 } from "../hooks/useBreathingSession";
+import { useWakeLock } from "../hooks/useWakeLock";
 import { unlockAudio } from "../lib/breathAudio";
+import { requestWakeLock } from "../lib/wakeLock";
 import { useSettings } from "../store/useSettings";
 import { useHistory } from "../store/useHistory";
 import GradientBackground from "./GradientBackground";
@@ -30,8 +32,17 @@ export default function SessionScreen() {
   useBreathAudio(state);
   const settings = useSettings();
 
+  const isActive =
+    state.phase === "breathing" ||
+    state.phase === "retention" ||
+    state.phase === "recovery" ||
+    state.phase === "roundBreak";
+
+  useWakeLock(isActive);
+
   const handleStart = useCallback(() => {
     if (settings.soundEnabled) void unlockAudio();
+    void requestWakeLock();
     start();
   }, [settings.soundEnabled, start]);
   const isInfiniteHold = settings.indefiniteRetention;
@@ -64,12 +75,6 @@ export default function SessionScreen() {
     },
     [isInfiniteHold, skipPhase, state.phase],
   );
-
-  const isActive =
-    state.phase === "breathing" ||
-    state.phase === "retention" ||
-    state.phase === "recovery" ||
-    state.phase === "roundBreak";
 
   return (
     <div
