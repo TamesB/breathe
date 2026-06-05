@@ -1,7 +1,10 @@
 import { Drawer } from "vaul";
 import { unlockAudio } from "../lib/breathAudio";
 import {
-  retentionForRound,
+  estimateSessionSeconds,
+  formatSessionDuration,
+} from "../lib/sessionEstimate";
+import {
   SETTINGS_LIMITS,
   useSettings,
   type BreathSettings,
@@ -42,7 +45,7 @@ const TIMED_RETENTION_FIELDS: FieldDef[] = [
   {
     key: "retentionSeconds",
     label: "Breath retention",
-    format: (v) => formatSeconds(v),
+    format: (v) => formatSessionDuration(v),
     hint: "Hold with empty lungs (round 1)",
   },
   {
@@ -277,15 +280,8 @@ function RangeField({
 }
 
 function SessionSummary() {
-  const { rounds, breathsPerRound, inhaleSeconds, exhaleSeconds } =
-    useSettings();
-  const {
-    retentionSeconds,
-    retentionIncreasePerRound,
-    recoverySeconds,
-    roundBreakSeconds,
-    indefiniteRetention,
-  } = useSettings();
+  const settings = useSettings();
+  const { rounds, indefiniteRetention } = settings;
 
   if (indefiniteRetention) {
     return (
@@ -297,36 +293,14 @@ function SessionSummary() {
     );
   }
 
-  const perRoundBreathing =
-    breathsPerRound * (inhaleSeconds + exhaleSeconds);
-  const timedSettings = {
-    retentionSeconds,
-    retentionIncreasePerRound,
-    indefiniteRetention: false as const,
-  };
-  let totalRetention = 0;
-  for (let r = 1; r <= rounds; r++) {
-    totalRetention += retentionForRound(timedSettings, r);
-  }
-  const totalSeconds =
-    rounds * (perRoundBreathing + recoverySeconds) +
-    totalRetention +
-    Math.max(0, rounds - 1) * roundBreakSeconds;
+  const totalSeconds = estimateSessionSeconds(settings);
   return (
     <div className="rounded-2xl bg-white/5 p-4 text-sm text-white/70">
       Estimated session:{" "}
       <span className="font-semibold text-white">
-        ~{formatSeconds(Math.round(totalSeconds))}
+        ~{formatSessionDuration(totalSeconds ?? 0)}
       </span>{" "}
       across {rounds} {rounds === 1 ? "round" : "rounds"}.
     </div>
   );
-}
-
-function formatSeconds(total: number) {
-  const m = Math.floor(total / 60);
-  const s = total % 60;
-  if (m === 0) return `${s}s`;
-  if (s === 0) return `${m}m`;
-  return `${m}m ${s}s`;
 }

@@ -8,6 +8,10 @@ import {
 import { useWakeLock } from "../hooks/useWakeLock";
 import { unlockAudio } from "../lib/breathAudio";
 import { requestWakeLock } from "../lib/wakeLock";
+import {
+  estimateSessionSeconds,
+  formatSessionDuration,
+} from "../lib/sessionEstimate";
 import { useSettings } from "../store/useSettings";
 import { useHistory } from "../store/useHistory";
 import GradientBackground from "./GradientBackground";
@@ -46,6 +50,7 @@ export default function SessionScreen() {
     start();
   }, [settings.soundEnabled, start]);
   const isInfiniteHold = settings.indefiniteRetention;
+  const estimatedSeconds = estimateSessionSeconds(settings);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -120,6 +125,20 @@ export default function SessionScreen() {
                   : settings.retentionIncreasePerRound > 0
                     ? `${formatShort(settings.retentionSeconds)} hold (+${settings.retentionIncreasePerRound}s/round)`
                     : `${formatShort(settings.retentionSeconds)} hold`}
+              </p>
+              <p className="text-center text-sm text-white/45">
+                {isInfiniteHold
+                  ? "Estimated time depends on your hold"
+                  : estimatedSeconds != null
+                    ? (
+                        <>
+                          Estimated session{" "}
+                          <span className="font-semibold text-white/70">
+                            ~{formatSessionDuration(estimatedSeconds)}
+                          </span>
+                        </>
+                      )
+                    : null}
               </p>
               <button
                 onClick={handleStart}
