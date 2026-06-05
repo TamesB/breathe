@@ -7,6 +7,11 @@ export interface BreathSettings {
   inhaleSeconds: number;
   exhaleSeconds: number;
   retentionSeconds: number;
+  /**
+   * If true, the breath-hold will not auto-end after `retentionSeconds`.
+   * Instead, each round continues until the user requests to breathe.
+   */
+  indefiniteRetention: boolean;
   recoverySeconds: number;
   roundBreakSeconds: number;
 }
@@ -17,6 +22,7 @@ export const DEFAULT_SETTINGS: BreathSettings = {
   inhaleSeconds: 1.6,
   exhaleSeconds: 1.6,
   retentionSeconds: 90,
+  indefiniteRetention: false,
   recoverySeconds: 15,
   roundBreakSeconds: 5,
 };
@@ -48,9 +54,10 @@ export const useSettings = create<SettingsState>()(
     }),
     {
       name: "breathe-settings",
-      version: 2,
+      version: 3,
       migrate: (persisted, version) => {
-        if (version < 2) {
+        // Older versions won't have `indefiniteRetention`.
+        if (version < 3) {
           return {
             ...DEFAULT_SETTINGS,
             ...(persisted as Partial<BreathSettings>),

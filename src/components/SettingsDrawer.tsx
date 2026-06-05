@@ -13,6 +13,7 @@ interface Props {
 
 interface FieldDef {
   key: keyof BreathSettings;
+  kind?: "range" | "toggle";
   label: string;
   unit?: string;
   format?: (v: number) => string;
@@ -39,6 +40,12 @@ const FIELDS: FieldDef[] = [
     label: "Breath retention",
     format: (v) => formatSeconds(v),
     hint: "Hold with empty lungs",
+  },
+  {
+    key: "indefiniteRetention",
+    kind: "toggle",
+    label: "Indefinite hold",
+    hint: "Hold until you request to breathe",
   },
   {
     key: "recoverySeconds",
@@ -92,13 +99,55 @@ export default function SettingsDrawer({
 
           <div className="mt-3 flex-1 space-y-5 overflow-y-auto px-6 pb-8 pt-2">
             {FIELDS.map((f) => {
-              const limits = SETTINGS_LIMITS[f.key];
               const value = settings[f.key];
+              const isIndefinite = settings.indefiniteRetention;
+
+              if (f.kind === "toggle") {
+                const checked = Boolean(value);
+                return (
+                  <div key={f.key}>
+                    <div className="mb-1 flex items-baseline justify-between">
+                      <label className="text-base font-medium text-white">
+                        {f.label}
+                      </label>
+                      <span className="font-mono text-base text-accent">
+                        {checked ? "On" : "Off"}
+                      </span>
+                    </div>
+                    {f.hint && (
+                      <p className="mb-2 text-xs text-white/40">{f.hint}</p>
+                    )}
+                    <label className="flex cursor-pointer items-center gap-3">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(e) =>
+                          settings.setSetting(
+                            f.key,
+                            e.target.checked as any,
+                          )
+                        }
+                        className="h-5 w-5 accent-accent"
+                      />
+                      <span className="text-sm text-white/70">
+                        {checked
+                          ? "You choose when to breathe"
+                          : "Use a fixed duration"}
+                      </span>
+                    </label>
+                  </div>
+                );
+              }
+
+              const limits = SETTINGS_LIMITS[f.key as keyof typeof SETTINGS_LIMITS];
+              const disabled =
+                f.key === "retentionSeconds" && isIndefinite;
               const display = f.format
-                ? f.format(value)
+                ? f.format(value as number)
                 : `${value}${f.unit ?? ""}`;
+
               return (
-                <div key={f.key}>
+                <div key={f.key} aria-disabled={disabled ? true : undefined}>
                   <div className="mb-1 flex items-baseline justify-between">
                     <label className="text-base font-medium text-white">
                       {f.label}
@@ -115,10 +164,11 @@ export default function SettingsDrawer({
                     min={limits.min}
                     max={limits.max}
                     step={limits.step}
-                    value={value}
+                    value={value as number}
                     onChange={(e) =>
                       settings.setSetting(f.key, Number(e.target.value))
                     }
+                    disabled={disabled}
                     className="h-2 w-full cursor-pointer appearance-none rounded-full bg-white/15 accent-accent"
                   />
                 </div>
@@ -136,9 +186,25 @@ export default function SettingsDrawer({
 function SessionSummary() {
   const { rounds, breathsPerRound, inhaleSeconds, exhaleSeconds } =
     useSettings();
-  const perRoundBreathing = breathsPerRound * (inhaleSeconds + exhaleSeconds);
-  const { retentionSeconds, recoverySeconds, roundBreakSeconds } =
-    useSettings();
+  const {
+    retentionSeconds,
+    recoverySeconds,
+    roundBreakSeconds,
+    indefiniteRetention,
+  } = useSettings();
+
+  if (indefiniteRetention) {
+    return (
+      <div className="rounded-2xl bg-white/5 p-4 text-sm text-white/70">
+        Estimated session: depends on your hold time. {rounds} round
+        {rounds === 1 ? "" : "s"} total; each ends when you request to
+        breathe.
+      </div>
+    );
+  }
+
+  const perRoundBreathing =
+    breathsPerRound * (inhaleSeconds + exhaleSeconds);
   const totalSeconds =
     rounds * (perRoundBreathing + retentionSeconds + recoverySeconds) +
     Math.max(0, rounds - 1) * roundBreakSeconds;

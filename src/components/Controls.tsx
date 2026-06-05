@@ -1,6 +1,7 @@
 interface Props {
   isPaused: boolean;
   showSkip: boolean;
+  skipLabel?: string;
   onTogglePause: () => void;
   onSkip: () => void;
   onReset: () => void;
@@ -9,6 +10,7 @@ interface Props {
 export default function Controls({
   isPaused,
   showSkip,
+  skipLabel,
   onTogglePause,
   onSkip,
   onReset,
@@ -32,7 +34,7 @@ export default function Controls({
           onClick={onSkip}
           className="rounded-full bg-white/10 px-5 py-3 text-sm font-medium text-white/80 backdrop-blur transition active:scale-95 hover:bg-white/15"
         >
-          Skip
+          {skipLabel ?? "Skip"}
         </button>
       )}
     </div>

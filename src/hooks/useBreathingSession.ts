@@ -175,7 +175,7 @@ export function useBreathingSession(options: SessionOptions = {}) {
         break;
       }
       case "retention": {
-        if (elapsedS >= c.retentionSeconds) {
+        if (!c.indefiniteRetention && elapsedS >= c.retentionSeconds) {
           retentionLogRef.current = [
             ...retentionLogRef.current,
             Math.round(c.retentionSeconds),
@@ -186,8 +186,10 @@ export function useBreathingSession(options: SessionOptions = {}) {
         publish({
           direction: "hold",
           holdElapsed: Math.floor(elapsedS),
-          secondsRemaining: Math.ceil(c.retentionSeconds - elapsedS),
-          retentionTarget: c.retentionSeconds,
+          secondsRemaining: c.indefiniteRetention
+            ? 0
+            : Math.ceil(c.retentionSeconds - elapsedS),
+          retentionTarget: c.indefiniteRetention ? 0 : c.retentionSeconds,
         });
         break;
       }
@@ -273,12 +275,34 @@ export function useBreathingSession(options: SessionOptions = {}) {
     if (phaseRef.current !== "retention") return;
     retentionLogRef.current = [
       ...retentionLogRef.current,
-      Math.floor(elapsedRef.current / 1000),
+      Math.round(elapsedRef.current / 1000),
     ];
     goToPhase("recovery");
   }, [goToPhase]);
 
   const reset = useCallback(() => {
+    const c = cfg.current;
+    const inSession =
+      phaseRef.current === "breathing" ||
+      phaseRef.current === "retention" ||
+      phaseRef.current === "recovery" ||
+      phaseRef.current === "roundBreak";
+
+    // In indefinite mode, "Stop" acts like "finish now" so you keep the rounds
+    // you already recorded.
+    if (c.indefiniteRetention && inSession) {
+      // If the user stops during the current indefinite hold, record it as the
+      // final round time so we don't lose the last measurement.
+      if (phaseRef.current === "retention") {
+        retentionLogRef.current = [
+          ...retentionLogRef.current,
+          Math.round(elapsedRef.current / 1000),
+        ];
+      }
+      finish();
+      return;
+    }
+
     stopLoop();
     phaseRef.current = "idle";
     roundRef.current = 1;
@@ -300,7 +324,7 @@ export function useBreathingSession(options: SessionOptions = {}) {
       isPaused: false,
       retentionLog: [],
     });
-  }, [stopLoop]);
+  }, [finish, stopLoop]);
 
   useEffect(() => stopLoop, [stopLoop]);
 

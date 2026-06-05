@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   useBreathingSession,
@@ -26,9 +26,36 @@ export default function SessionScreen() {
     onComplete: handleComplete,
   });
   const settings = useSettings();
+  const isInfiniteHold = settings.indefiniteRetention;
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const lastTapTsRef = useRef<number | null>(null);
+
+  const onPointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (!isInfiniteHold) return;
+      if (state.phase !== "retention") return;
+
+      const target = e.target as HTMLElement | null;
+      if (
+        target?.closest?.("button, input, textarea, select, a") != null
+      ) {
+        return;
+      }
+
+      const now = Date.now();
+      const last = lastTapTsRef.current;
+      lastTapTsRef.current = now;
+
+      // Double-tap (two quick taps/clicks) to end the indefinite hold.
+      if (last != null && now - last <= 320) {
+        lastTapTsRef.current = null;
+        skipPhase();
+      }
+    },
+    [isInfiniteHold, skipPhase, state.phase],
+  );
 
   const isActive =
     state.phase === "breathing" ||
@@ -37,7 +64,10 @@ export default function SessionScreen() {
     state.phase === "roundBreak";
 
   return (
-    <div className="relative flex min-h-[100dvh] flex-col items-center justify-between px-6 pb-safe pt-safe">
+    <div
+      className="relative flex min-h-[100dvh] flex-col items-center justify-between px-6 pb-safe pt-safe"
+      onPointerDown={onPointerDown}
+    >
       <GradientBackground phase={state.phase} />
 
       {/* Header */}
@@ -71,7 +101,10 @@ export default function SessionScreen() {
             >
               <p className="text-center text-sm text-white/60">
                 {settings.rounds} rounds &middot; {settings.breathsPerRound}{" "}
-                breaths &middot; {formatShort(settings.retentionSeconds)} hold
+                breaths &middot;{" "}
+                {isInfiniteHold
+                  ? "indefinite hold"
+                  : `${formatShort(settings.retentionSeconds)} hold`}
               </p>
               <button
                 onClick={start}
@@ -108,6 +141,7 @@ export default function SessionScreen() {
                 isPaused={state.isPaused}
                 showSkip={state.phase === "retention"}
                 onTogglePause={togglePause}
+                skipLabel={isInfiniteHold ? "I need to breathe" : "Skip"}
                 onSkip={skipPhase}
                 onReset={reset}
               />
