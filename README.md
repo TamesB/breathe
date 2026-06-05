@@ -32,7 +32,7 @@ A free, mobile-first, fully customizable Wim Hof-style guided breathing app. Bui
 Each round runs four phases:
 
 1. **Power breaths** — a set number of full inhale/exhale cycles (default 30).
-2. **Breath retention** — exhale and hold with empty lungs (default 90s).
+2. **Breath retention** — exhale and hold with empty lungs (default 90s on round 1; can increase each round — see below).
 3. **Recovery hold** — a full inhale, held (default 15s).
 4. **Break between rounds** — a short pause before the next round (default 5s).
 
@@ -45,17 +45,19 @@ Open the bottom-sheet **Settings** drawer to tune:
 - Rounds
 - Breaths per round
 - Inhale speed / Exhale speed (breathing pace)
-- Breath retention duration
-- **Indefinite hold** (optional) — hold until you request to breathe
+- Breath retention duration (round 1 hold, timed mode)
+- **Hold increase per round** (timed mode) — add extra seconds to each following round (e.g. 90s → 105s → 120s with +15s/round)
+- **Indefinite hold** (optional) — hold until you request to breathe; rounds still follow your configured count
 - Recovery hold duration
 - Break between rounds
 
-Settings persist to `localStorage` and apply to your next session. There's a live estimate of total session length.
+Settings persist to `localStorage` and apply to your next session. There's a live estimate of total session length (or “depends on your hold time” in indefinite mode).
 
 During a session you can **Pause / Resume** or **Stop**.
 
 - **Skip is intentionally limited to the breath retention phase** (it’s the only skippable phase).
-- When **Indefinite hold** is enabled, the Skip button becomes **“I need to breathe”** and also works via **double-tap anywhere** (excluding the buttons/inputs). Each time you end the hold, that round’s hold time is recorded.
+- When **Indefinite hold** is enabled, the Skip button becomes **“I need to breathe”** and also works via **double-tap anywhere** (excluding the buttons/inputs). Each time you end the hold, that round’s hold time is recorded and the session continues until all rounds are complete.
+- In timed mode with **Hold increase per round**, each round’s target hold is `base + (round − 1) × increase`. Skip early to record your actual time instead of the target.
 
 Retention is recorded per round and shown on the completion screen.
 
