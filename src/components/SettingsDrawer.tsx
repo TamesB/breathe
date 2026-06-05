@@ -14,14 +14,13 @@ interface Props {
 
 interface FieldDef {
   key: keyof BreathSettings;
-  kind?: "range" | "toggle";
   label: string;
   unit?: string;
   format?: (v: number) => string;
   hint?: string;
 }
 
-const FIELDS: FieldDef[] = [
+const GENERAL_FIELDS: FieldDef[] = [
   { key: "rounds", label: "Rounds", hint: "How many full cycles" },
   { key: "breathsPerRound", label: "Breaths per round" },
   {
@@ -36,6 +35,9 @@ const FIELDS: FieldDef[] = [
     unit: "s",
     format: (v) => v.toFixed(1),
   },
+];
+
+const TIMED_RETENTION_FIELDS: FieldDef[] = [
   {
     key: "retentionSeconds",
     label: "Breath retention",
@@ -48,12 +50,9 @@ const FIELDS: FieldDef[] = [
     unit: "s",
     hint: "Add extra seconds to each following round",
   },
-  {
-    key: "indefiniteRetention",
-    kind: "toggle",
-    label: "Indefinite hold",
-    hint: "Hold until you request to breathe",
-  },
+];
+
+const AFTER_RETENTION_FIELDS: FieldDef[] = [
   {
     key: "recoverySeconds",
     label: "Recovery hold",
@@ -68,12 +67,21 @@ const FIELDS: FieldDef[] = [
   },
 ];
 
+type RetentionTab = "timed" | "indefinite";
+
 export default function SettingsDrawer({
   open,
   onOpenChange,
   disabled,
 }: Props) {
   const settings = useSettings();
+  const retentionTab: RetentionTab = settings.indefiniteRetention
+    ? "indefinite"
+    : "timed";
+
+  function setRetentionTab(tab: RetentionTab) {
+    settings.setSetting("indefiniteRetention", tab === "indefinite");
+  }
 
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
@@ -105,90 +113,126 @@ export default function SettingsDrawer({
           </Drawer.Description>
 
           <div className="mt-3 flex-1 space-y-5 overflow-y-auto px-6 pb-8 pt-2">
-            {FIELDS.map((f) => {
-              const value = settings[f.key];
-              const isIndefinite = settings.indefiniteRetention;
+            {GENERAL_FIELDS.map((f) => (
+              <RangeField key={f.key} field={f} settings={settings} />
+            ))}
 
-              if (f.kind === "toggle") {
-                const checked = Boolean(value);
-                return (
-                  <div key={f.key}>
-                    <div className="mb-1 flex items-baseline justify-between">
-                      <label className="text-base font-medium text-white">
-                        {f.label}
-                      </label>
-                      <span className="font-mono text-base text-accent">
-                        {checked ? "On" : "Off"}
-                      </span>
-                    </div>
-                    {f.hint && (
-                      <p className="mb-2 text-xs text-white/40">{f.hint}</p>
-                    )}
-                    <label className="flex cursor-pointer items-center gap-3">
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={(e) =>
-                          settings.setSetting(
-                            f.key,
-                            e.target.checked as any,
-                          )
-                        }
-                        className="h-5 w-5 accent-accent"
-                      />
-                      <span className="text-sm text-white/70">
-                        {checked
-                          ? "You choose when to breathe"
-                          : "Use a fixed duration"}
-                      </span>
-                    </label>
-                  </div>
-                );
-              }
+            <RetentionTabs
+              activeTab={retentionTab}
+              onTabChange={setRetentionTab}
+            />
 
-              const limits = SETTINGS_LIMITS[f.key as keyof typeof SETTINGS_LIMITS];
-              const disabled =
-                isIndefinite &&
-                (f.key === "retentionSeconds" ||
-                  f.key === "retentionIncreasePerRound");
-              const display = f.format
-                ? f.format(value as number)
-                : `${value}${f.unit ?? ""}`;
+            {retentionTab === "timed" ? (
+              TIMED_RETENTION_FIELDS.map((f) => (
+                <RangeField key={f.key} field={f} settings={settings} />
+              ))
+            ) : (
+              <IndefiniteRetentionPanel />
+            )}
 
-              return (
-                <div key={f.key} aria-disabled={disabled ? true : undefined}>
-                  <div className="mb-1 flex items-baseline justify-between">
-                    <label className="text-base font-medium text-white">
-                      {f.label}
-                    </label>
-                    <span className="font-mono text-base text-accent">
-                      {display}
-                    </span>
-                  </div>
-                  {f.hint && (
-                    <p className="mb-2 text-xs text-white/40">{f.hint}</p>
-                  )}
-                  <input
-                    type="range"
-                    min={limits.min}
-                    max={limits.max}
-                    step={limits.step}
-                    value={value as number}
-                    onChange={(e) =>
-                      settings.setSetting(f.key, Number(e.target.value))
-                    }
-                    disabled={disabled}
-                    className="h-2 w-full cursor-pointer appearance-none rounded-full bg-white/15 accent-accent"
-                  />
-                </div>
-              );
-            })}
+            {AFTER_RETENTION_FIELDS.map((f) => (
+              <RangeField key={f.key} field={f} settings={settings} />
+            ))}
 
             <SessionSummary />
           </div>
         </Drawer.Content>
       </Drawer.Portal>
     </Drawer.Root>
+  );
+}
+
+function RetentionTabs({
+  activeTab,
+  onTabChange,
+}: {
+  activeTab: RetentionTab;
+  onTabChange: (tab: RetentionTab) => void;
+}) {
+  return (
+    <div>
+      <p className="mb-2 text-base font-medium text-white">Breath hold</p>
+      <div className="flex rounded-full bg-white/10 p-1">
+        <button
+          type="button"
+          onClick={() => onTabChange("timed")}
+          className={`flex-1 rounded-full px-3 py-2 text-sm font-medium transition ${
+            activeTab === "timed"
+              ? "bg-white text-black"
+              : "text-white/70 hover:text-white"
+          }`}
+        >
+          Fixed duration
+        </button>
+        <button
+          type="button"
+          onClick={() => onTabChange("indefinite")}
+          className={`flex-1 rounded-full px-3 py-2 text-sm font-medium transition ${
+            activeTab === "indefinite"
+              ? "bg-white text-black"
+              : "text-white/70 hover:text-white"
+          }`}
+        >
+          You choose
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function IndefiniteRetentionPanel() {
+  return (
+    <div className="rounded-2xl bg-white/5 p-4">
+      <p className="text-sm text-white/75">
+        Hold with empty lungs until you tap{" "}
+        <span className="font-medium text-white">I need to breathe</span> or
+        double-tap the screen. Each round&apos;s hold time is recorded.
+      </p>
+      <p className="mt-2 text-xs text-white/45">
+        Your configured number of rounds still applies.
+      </p>
+    </div>
+  );
+}
+
+function RangeField({
+  field,
+  settings,
+  disabled,
+}: {
+  field: FieldDef;
+  settings: ReturnType<typeof useSettings.getState>;
+  disabled?: boolean;
+}) {
+  const value = settings[field.key] as number;
+  const limits =
+    SETTINGS_LIMITS[field.key as keyof typeof SETTINGS_LIMITS];
+  const display = field.format
+    ? field.format(value)
+    : `${value}${field.unit ?? ""}`;
+
+  return (
+    <div aria-disabled={disabled ? true : undefined}>
+      <div className="mb-1 flex items-baseline justify-between">
+        <label className="text-base font-medium text-white">{field.label}</label>
+        <span className="font-mono text-base text-accent">{display}</span>
+      </div>
+      {field.hint && (
+        <p className="mb-2 text-xs text-white/40">{field.hint}</p>
+      )}
+      <input
+        type="range"
+        min={limits.min}
+        max={limits.max}
+        step={limits.step}
+        value={value}
+        onChange={(e) =>
+          settings.setSetting(field.key, Number(e.target.value))
+        }
+        disabled={disabled}
+        className="h-2 w-full cursor-pointer appearance-none rounded-full bg-white/15 accent-accent"
+      />
+    </div>
   );
 }
 
