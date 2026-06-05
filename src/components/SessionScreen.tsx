@@ -204,8 +204,25 @@ export default function SessionScreen() {
             </motion.div>
           )}
         </AnimatePresence>
+        <MedicalDisclaimer />
       </footer>
     </div>
+  );
+}
+
+function MedicalDisclaimer() {
+  return (
+    <details className="group max-w-md px-2 pt-2">
+      <summary className="cursor-pointer list-none text-center text-[10px] text-white/30 underline decoration-white/20 underline-offset-2 transition hover:text-white/45 [&::-webkit-details-marker]:hidden">
+        Medical disclaimer
+      </summary>
+      <p className="mt-2 text-center text-[11px] leading-relaxed text-white/35">
+        Not medical advice. Breathwork can cause lightheadedness — practice
+        seated or lying down in a safe place. Never practice in or near water,
+        or while driving. If you are pregnant or have a cardiovascular
+        condition or epilepsy, consult a doctor first.
+      </p>
+    </details>
   );
 }
 
