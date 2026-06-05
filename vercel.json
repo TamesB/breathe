@@ -4,7 +4,7 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "installCommand": "npm install",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "rewrites": [{ "source": "/:path*", "destination": "/index.html" }],
   "headers": [
     {
       "source": "/sw.js",
@@ -20,7 +20,7 @@
       ]
     },
     {
-      "source": "/workbox-*.js",
+      "source": "/workbox-:id(.*)\\.js",
       "headers": [
         {
           "key": "Cache-Control",
@@ -29,7 +29,7 @@
       ]
     },
     {
-      "source": "/assets/(.*)",
+      "source": "/assets/:path*",
       "headers": [
         {
           "key": "Cache-Control",
@@ -38,7 +38,7 @@
       ]
     },
     {
-      "source": "/(.*)",
+      "source": "/:path*",
       "headers": [
         { "key": "X-Content-Type-Options", "value": "nosniff" },
         { "key": "X-Frame-Options", "value": "DENY" },
