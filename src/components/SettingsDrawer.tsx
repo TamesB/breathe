@@ -46,6 +46,12 @@ const FIELDS: FieldDef[] = [
     unit: "s",
     hint: "Hold after a full inhale",
   },
+  {
+    key: "roundBreakSeconds",
+    label: "Break between rounds",
+    unit: "s",
+    hint: "Pause after recovery hold before the next round",
+  },
 ];
 
 export default function SettingsDrawer({
@@ -131,9 +137,11 @@ function SessionSummary() {
   const { rounds, breathsPerRound, inhaleSeconds, exhaleSeconds } =
     useSettings();
   const perRoundBreathing = breathsPerRound * (inhaleSeconds + exhaleSeconds);
-  const { retentionSeconds, recoverySeconds } = useSettings();
+  const { retentionSeconds, recoverySeconds, roundBreakSeconds } =
+    useSettings();
   const totalSeconds =
-    rounds * (perRoundBreathing + retentionSeconds + recoverySeconds);
+    rounds * (perRoundBreathing + retentionSeconds + recoverySeconds) +
+    Math.max(0, rounds - 1) * roundBreakSeconds;
   return (
     <div className="rounded-2xl bg-white/5 p-4 text-sm text-white/70">
       Estimated session:{" "}

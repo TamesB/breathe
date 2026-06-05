@@ -1,5 +1,6 @@
 interface Props {
   isPaused: boolean;
+  showSkip: boolean;
   onTogglePause: () => void;
   onSkip: () => void;
   onReset: () => void;
@@ -7,6 +8,7 @@ interface Props {
 
 export default function Controls({
   isPaused,
+  showSkip,
   onTogglePause,
   onSkip,
   onReset,
@@ -25,12 +27,14 @@ export default function Controls({
       >
         {isPaused ? "Resume" : "Pause"}
       </button>
-      <button
-        onClick={onSkip}
-        className="rounded-full bg-white/10 px-5 py-3 text-sm font-medium text-white/80 backdrop-blur transition active:scale-95 hover:bg-white/15"
-      >
-        Skip
-      </button>
+      {showSkip && (
+        <button
+          onClick={onSkip}
+          className="rounded-full bg-white/10 px-5 py-3 text-sm font-medium text-white/80 backdrop-blur transition active:scale-95 hover:bg-white/15"
+        >
+          Skip
+        </button>
+      )}
     </div>
   );
 }

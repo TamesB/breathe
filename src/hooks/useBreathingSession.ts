@@ -1,7 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSettings, type BreathSettings } from "../store/useSettings";
 
-export type Phase = "idle" | "breathing" | "retention" | "recovery" | "complete";
+export type Phase =
+  | "idle"
+  | "breathing"
+  | "retention"
+  | "recovery"
+  | "roundBreak"
+  | "complete";
 export type BreathDirection = "inhale" | "exhale" | "hold";
 
 export interface SessionState {
@@ -88,6 +94,8 @@ export function useBreathingSession(options: SessionOptions = {}) {
     const breathingSeconds =
       completedRounds * c.breathsPerRound * (c.inhaleSeconds + c.exhaleSeconds);
     const recoverySeconds = completedRounds * c.recoverySeconds;
+    const roundBreakSeconds =
+      Math.max(0, completedRounds - 1) * c.roundBreakSeconds;
     const totalRetention = retention.reduce((a, b) => a + b, 0);
     publish({ phase: "complete", retentionLog: retention });
     onCompleteRef.current?.({
@@ -98,7 +106,10 @@ export function useBreathingSession(options: SessionOptions = {}) {
       recoverySeconds: c.recoverySeconds,
       retentionLog: retention,
       durationSeconds: Math.round(
-        breathingSeconds + recoverySeconds + totalRetention,
+        breathingSeconds +
+          recoverySeconds +
+          roundBreakSeconds +
+          totalRetention,
       ),
     });
   }, [publish]);
@@ -186,12 +197,23 @@ export function useBreathingSession(options: SessionOptions = {}) {
             finish();
             return;
           }
-          goToPhase("breathing", { round: roundRef.current + 1 });
+          goToPhase("roundBreak");
           break;
         }
         publish({
           direction: "hold",
           secondsRemaining: Math.ceil(c.recoverySeconds - elapsedS),
+        });
+        break;
+      }
+      case "roundBreak": {
+        if (elapsedS >= c.roundBreakSeconds) {
+          goToPhase("breathing", { round: roundRef.current + 1 });
+          break;
+        }
+        publish({
+          direction: "hold",
+          secondsRemaining: Math.ceil(c.roundBreakSeconds - elapsedS),
         });
         break;
       }
@@ -248,31 +270,13 @@ export function useBreathingSession(options: SessionOptions = {}) {
   }, [pause, resume]);
 
   const skipPhase = useCallback(() => {
-    const c = cfg.current;
-    switch (phaseRef.current) {
-      case "breathing":
-        goToPhase("retention");
-        break;
-      case "retention": {
-        retentionLogRef.current = [
-          ...retentionLogRef.current,
-          Math.floor(elapsedRef.current / 1000),
-        ];
-        goToPhase("recovery");
-        break;
-      }
-      case "recovery": {
-        if (roundRef.current >= c.rounds) {
-          finish();
-        } else {
-          goToPhase("breathing", { round: roundRef.current + 1 });
-        }
-        break;
-      }
-      default:
-        break;
-    }
-  }, [goToPhase, finish]);
+    if (phaseRef.current !== "retention") return;
+    retentionLogRef.current = [
+      ...retentionLogRef.current,
+      Math.floor(elapsedRef.current / 1000),
+    ];
+    goToPhase("recovery");
+  }, [goToPhase]);
 
   const reset = useCallback(() => {
     stopLoop();

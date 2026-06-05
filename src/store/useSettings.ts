@@ -8,6 +8,7 @@ export interface BreathSettings {
   exhaleSeconds: number;
   retentionSeconds: number;
   recoverySeconds: number;
+  roundBreakSeconds: number;
 }
 
 export const DEFAULT_SETTINGS: BreathSettings = {
@@ -17,6 +18,7 @@ export const DEFAULT_SETTINGS: BreathSettings = {
   exhaleSeconds: 1.6,
   retentionSeconds: 90,
   recoverySeconds: 15,
+  roundBreakSeconds: 5,
 };
 
 export const SETTINGS_LIMITS = {
@@ -26,6 +28,7 @@ export const SETTINGS_LIMITS = {
   exhaleSeconds: { min: 0.8, max: 5, step: 0.1 },
   retentionSeconds: { min: 15, max: 300, step: 5 },
   recoverySeconds: { min: 5, max: 60, step: 1 },
+  roundBreakSeconds: { min: 2, max: 10, step: 1 },
 } as const;
 
 interface SettingsState extends BreathSettings {
@@ -45,7 +48,16 @@ export const useSettings = create<SettingsState>()(
     }),
     {
       name: "breathe-settings",
-      version: 1,
+      version: 2,
+      migrate: (persisted, version) => {
+        if (version < 2) {
+          return {
+            ...DEFAULT_SETTINGS,
+            ...(persisted as Partial<BreathSettings>),
+          };
+        }
+        return persisted as SettingsState;
+      },
     },
   ),
 );

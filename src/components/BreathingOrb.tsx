@@ -23,6 +23,8 @@ export default function BreathingOrb({ state }: Props) {
     scale = 0.62; // lungs empty
   } else if (phase === "recovery") {
     scale = 1.12; // lungs full, held
+  } else if (phase === "roundBreak") {
+    scale = 0.92; // neutral resting size
   } else if (phase === "idle" || phase === "complete") {
     scale = 0.92;
   }
@@ -36,14 +38,16 @@ export default function BreathingOrb({ state }: Props) {
           ? "hold"
           : phase === "recovery"
             ? "hold full"
-            : direction;
+            : phase === "roundBreak"
+              ? "rest"
+              : direction;
 
   const sub =
     phase === "breathing"
       ? `${state.breathNumber} / ${state.totalBreaths}`
       : phase === "retention"
         ? formatTime(state.holdElapsed)
-        : phase === "recovery"
+        : phase === "recovery" || phase === "roundBreak"
           ? `${state.secondsRemaining}s`
           : "";
 

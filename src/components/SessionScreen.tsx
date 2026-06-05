@@ -33,7 +33,8 @@ export default function SessionScreen() {
   const isActive =
     state.phase === "breathing" ||
     state.phase === "retention" ||
-    state.phase === "recovery";
+    state.phase === "recovery" ||
+    state.phase === "roundBreak";
 
   return (
     <div className="relative flex min-h-[100dvh] flex-col items-center justify-between px-6 pb-safe pt-safe">
@@ -105,6 +106,7 @@ export default function SessionScreen() {
             >
               <Controls
                 isPaused={state.isPaused}
+                showSkip={state.phase === "retention"}
                 onTogglePause={togglePause}
                 onSkip={skipPhase}
                 onReset={reset}
@@ -155,7 +157,9 @@ function PhaseGuide({
           ? "exhale and hold · relax into the stillness"
           : phase === "recovery"
             ? "big breath in · hold it"
-            : phase === "complete"
+            : phase === "roundBreak"
+              ? "rest · next round starting soon"
+              : phase === "complete"
               ? "well done"
               : "";
   return (
