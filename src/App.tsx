@@ -15,7 +15,7 @@ export default function App() {
 
       if (
         state.status === "authenticated" &&
-        prev.status !== "authenticated"
+        (prev.status !== "authenticated" || !prev.initialized)
       ) {
         void useHistory.getState().loadRemote();
       } else if (
