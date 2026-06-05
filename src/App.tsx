@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import InstallBanner from "./components/InstallBanner";
 import SessionScreen from "./components/SessionScreen";
 import { useAuth } from "./store/useAuth";
 import { useHistory } from "./store/useHistory";
@@ -28,5 +29,10 @@ export default function App() {
     return unsubscribe;
   }, []);
 
-  return <SessionScreen />;
+  return (
+    <>
+      <SessionScreen />
+      <InstallBanner />
+    </>
+  );
 }

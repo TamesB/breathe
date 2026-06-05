@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.svg"],
+      includeAssets: ["favicon.svg", "icons/*.png"],
       manifest: {
         name: "Breathe - Wim Hof Guided Breathing",
         short_name: "Breathe",
@@ -20,14 +20,19 @@ export default defineConfig({
         start_url: "/",
         icons: [
           {
-            src: "/icons/icon.svg",
-            sizes: "any",
-            type: "image/svg+xml",
+            src: "/icons/icon-192.png",
+            sizes: "192x192",
+            type: "image/png",
           },
           {
-            src: "/icons/icon.svg",
-            sizes: "any",
-            type: "image/svg+xml",
+            src: "/icons/icon-512.png",
+            sizes: "512x512",
+            type: "image/png",
+          },
+          {
+            src: "/icons/icon-512.png",
+            sizes: "512x512",
+            type: "image/png",
             purpose: "maskable",
           },
         ],
