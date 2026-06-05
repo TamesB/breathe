@@ -16,6 +16,7 @@ export interface BreathSettings {
   indefiniteRetention: boolean;
   recoverySeconds: number;
   roundBreakSeconds: number;
+  soundEnabled: boolean;
 }
 
 export const DEFAULT_SETTINGS: BreathSettings = {
@@ -28,6 +29,7 @@ export const DEFAULT_SETTINGS: BreathSettings = {
   indefiniteRetention: false,
   recoverySeconds: 15,
   roundBreakSeconds: 5,
+  soundEnabled: true,
 };
 
 export const SETTINGS_LIMITS = {
@@ -73,9 +75,9 @@ export const useSettings = create<SettingsState>()(
     }),
     {
       name: "breathe-settings",
-      version: 4,
+      version: 5,
       migrate: (persisted, version) => {
-        if (version < 4) {
+        if (version < 5) {
           return {
             ...DEFAULT_SETTINGS,
             ...(persisted as Partial<BreathSettings>),

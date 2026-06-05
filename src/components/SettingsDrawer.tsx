@@ -1,4 +1,5 @@
 import { Drawer } from "vaul";
+import { unlockAudio } from "../lib/breathAudio";
 import {
   retentionForRound,
   SETTINGS_LIMITS,
@@ -134,6 +135,8 @@ export default function SettingsDrawer({
               <RangeField key={f.key} field={f} settings={settings} />
             ))}
 
+            <SoundToggle settings={settings} />
+
             <SessionSummary />
           </div>
         </Drawer.Content>
@@ -191,6 +194,43 @@ function IndefiniteRetentionPanel() {
       <p className="mt-2 text-xs text-white/45">
         Your configured number of rounds still applies.
       </p>
+    </div>
+  );
+}
+
+function SoundToggle({
+  settings,
+}: {
+  settings: ReturnType<typeof useSettings.getState>;
+}) {
+  const enabled = settings.soundEnabled;
+
+  return (
+    <div>
+      <div className="mb-1 flex items-baseline justify-between">
+        <label className="text-base font-medium text-white">Sound cues</label>
+        <span className="font-mono text-base text-accent">
+          {enabled ? "On" : "Off"}
+        </span>
+      </div>
+      <p className="mb-2 text-xs text-white/40">
+        Soft tones for inhale, exhale, and phase changes
+      </p>
+      <label className="flex cursor-pointer items-center gap-3">
+        <input
+          type="checkbox"
+          checked={enabled}
+          onChange={(e) => {
+            const next = e.target.checked;
+            settings.setSetting("soundEnabled", next);
+            if (next) void unlockAudio();
+          }}
+          className="h-5 w-5 accent-accent"
+        />
+        <span className="text-sm text-white/70">
+          {enabled ? "Audio cues enabled" : "Silent mode"}
+        </span>
+      </label>
     </div>
   );
 }

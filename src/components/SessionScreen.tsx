@@ -1,9 +1,11 @@
 import { useCallback, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useBreathAudio } from "../hooks/useBreathAudio";
 import {
   useBreathingSession,
   type CompletedSession,
 } from "../hooks/useBreathingSession";
+import { unlockAudio } from "../lib/breathAudio";
 import { useSettings } from "../store/useSettings";
 import { useHistory } from "../store/useHistory";
 import GradientBackground from "./GradientBackground";
@@ -25,7 +27,13 @@ export default function SessionScreen() {
   const { state, start, togglePause, skipPhase, reset } = useBreathingSession({
     onComplete: handleComplete,
   });
+  useBreathAudio(state);
   const settings = useSettings();
+
+  const handleStart = useCallback(() => {
+    if (settings.soundEnabled) void unlockAudio();
+    start();
+  }, [settings.soundEnabled, start]);
   const isInfiniteHold = settings.indefiniteRetention;
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -109,7 +117,7 @@ export default function SessionScreen() {
                     : `${formatShort(settings.retentionSeconds)} hold`}
               </p>
               <button
-                onClick={start}
+                onClick={handleStart}
                 className="w-full rounded-full bg-white py-4 text-lg font-semibold text-black shadow-xl transition active:scale-[0.98] hover:bg-white/90"
               >
                 Start
